@@ -185,7 +185,7 @@ int main( int argc, char** argv )
         }
         std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) );
     }
-    printf( "\nQueue delay: %s\nTimer resolution: %s\n", tracy::TimeToString( worker.GetDelay() ), tracy::TimeToString( worker.GetResolution() ) );
+    printf( "\nTimer resolution: %s\n", tracy::TimeToString( worker.GetResolution() ) );
 
 #ifdef _WIN32
     signal( SIGINT, SigInt );
@@ -276,7 +276,7 @@ int main( int argc, char** argv )
         }
         if( fd.callstack != 0 )
         {
-            AnsiPrintf( ANSI_BOLD, "\n%sFailure callstack:%s\n" );
+            AnsiPrintf( ANSI_BOLD, "\nFailure callstack:\n" );
             auto& cs = worker.GetCallstack( fd.callstack );
             int fidx = 0;
             for( auto& entry : cs )

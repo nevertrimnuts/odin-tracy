@@ -15,7 +15,7 @@ This assumes you are using the latest nightly build or GitHub master of the Odin
 
 ## 1. Cloning the sources
 ```console
-git clone https://github.com/oskarnp/odin-tracy
+git clone https://github.com/nevertrimnuts/odin-tracy
 ```
 
 ## 2. Building the Tracy profiler server
@@ -25,7 +25,7 @@ Tracy profiler server is built using CMake version 3.16 or later.
 Example (using Clang compiler and Ninja build system):
 
 ```console
-CXX=clang++ CC=clang cmake -G Ninja -S vendor/tracy/profiler -B build/tracy-profiler -D CMAKE_BUILD_TYPE=Release
+CXX=clang++ CC=clang cmake -G Ninja -S vendor/tracy/profiler -B build/tracy-profiler -D CMAKE_BUILD_TYPE=Release -D LEGACY=ON
 cmake --build build/tracy-profiler
 ```
 
@@ -35,7 +35,10 @@ cmake --build build/tracy-profiler
 Refer to official manual for more details.
 
 
-## 3. Building the Tracy profiler client library
+## 3. Building the Tracy profiler client library (the part that will be loaded into your program)
+
+> [!NOTE]
+> you can also just use the scripts in the scripts/ directory. Makes it very easy to add/remove options. Currently only for linux.
 
 Tracy profiler library is _optionally_ built using CMake version 3.10 or later. See vendor/tracy/CMakeLists.txt for more information.
 
@@ -43,7 +46,7 @@ If you prefer to not use CMake you can build the client directly:
 
 ### Mac OS
 ```console
-c++ -stdlib=libc++ -mmacosx-version-min=10.8 -std=c++11 -DTRACY_ENABLE -O2 -dynamiclib vendor/tracy/public/TracyClient.cpp  -o tracy.dylib
+c++ -stdlib=libc++ -mmacosx-version-min=10.8 -std=c++11 -DTRACY_ENABLE -O2 -dynamiclib vendor/tracy/public/TracyClient.cpp -o tracy.dylib
 ```
 ### Windows
 ```console
@@ -58,7 +61,7 @@ c++ -std=c++11 -DTRACY_ENABLE -O2 vendor/tracy/public/TracyClient.cpp -shared -f
 ## 4. (Optional) Run the demo application / profiler client
 
 ```console
-odin run demo -define:TRACY_ENABLE=true
+odin run examples/simple_demo -define:TRACY_ENABLE=true
 ```
 
 and then click Connect in Tracy profiler server.
@@ -71,4 +74,4 @@ and then click Connect in Tracy profiler server.
 ---
 
 > [!IMPORTANT]
-> For more details on how to use Tracy, please refer to the [official manual](https://github.com/wolfpld/tracy/releases/download/v0.11.0/tracy.pdf).
+> For more details on how to use Tracy, please refer to the [official manual](https://github.com/wolfpld/tracy/releases/download/v0.13.1/tracy.pdf).

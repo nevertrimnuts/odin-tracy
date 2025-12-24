@@ -161,6 +161,12 @@ foreign tracy {
 	___tracy_after_try_lock_lockable_ctx                :: proc( lockdata: ^__tracy_lockable_context_data, acquired: b32 ) ---
 	___tracy_mark_lockable_ctx                          :: proc( lockdata: ^__tracy_lockable_context_data, srcloc: ^___tracy_source_location_data ) ---
 	___tracy_custom_name_lockable_ctx                   :: proc( lockdata: ^__tracy_lockable_context_data, name: cstring, nameSz: c.size_t ) ---
+
+    // NOTE: the tracy C api returns an `int` here. As far as I remeber, 
+    // that's normally i32 in C. This worked for me. If this becomes an 
+    // error for you, open an issue.
+    ___tracy_begin_sampling_profiling                   :: proc() -> b32 ---
+    ___tracy_end_sampling_profiling                     :: proc() ---
 }
 
 when #config(TRACY_FIBERS, false) {

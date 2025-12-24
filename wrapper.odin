@@ -27,13 +27,14 @@ ZoneNS  :: ZoneN
 ZoneCS  :: ZoneC
 ZoneNCS :: ZoneNC
 
-@(disabled=!TRACY_ENABLE) ZoneText  :: #force_inline proc(ctx: ZoneCtx, text: string) { ___tracy_emit_zone_text(ctx, _sl(text)) }
-@(disabled=!TRACY_ENABLE) ZoneName  :: #force_inline proc(ctx: ZoneCtx, name: string) { ___tracy_emit_zone_name(ctx, _sl(name)) }
-@(disabled=!TRACY_ENABLE) ZoneColor :: #force_inline proc(ctx: ZoneCtx, color: u32)   { ___tracy_emit_zone_color(ctx, color)    }
-@(disabled=!TRACY_ENABLE) ZoneValue :: #force_inline proc(ctx: ZoneCtx, value: u64)   { ___tracy_emit_zone_value(ctx, value)    }
+@(disabled=!TRACY_ENABLE, no_instrumentation) ZoneText  :: #force_inline proc "contextless" (ctx: ZoneCtx, text: string) { ___tracy_emit_zone_text(ctx, _sl(text)) }
+@(disabled=!TRACY_ENABLE, no_instrumentation) ZoneName  :: #force_inline proc "contextless" (ctx: ZoneCtx, name: string) { ___tracy_emit_zone_name(ctx, _sl(name)) }
+@(disabled=!TRACY_ENABLE, no_instrumentation) ZoneColor :: #force_inline proc "contextless" (ctx: ZoneCtx, color: u32)   { ___tracy_emit_zone_color(ctx, color)    }
+@(disabled=!TRACY_ENABLE, no_instrumentation) ZoneValue :: #force_inline proc "contextless" (ctx: ZoneCtx, value: u64)   { ___tracy_emit_zone_value(ctx, value)    }
 
 // NOTE: scoped Zone*() procs also exists, no need of calling this directly.
-ZoneBegin :: proc(active: bool, depth: i32, loc := #caller_location) -> (ctx: ZoneCtx) {
+@(no_instrumentation)
+ZoneBegin :: proc "contextless" (active: bool, depth: i32, loc := #caller_location) -> (ctx: ZoneCtx) {
 	when TRACY_ENABLE {
 		/* From manual, page 46:
 		     The variable representing an allocated source location is of an opaque type.
@@ -53,7 +54,7 @@ ZoneBegin :: proc(active: bool, depth: i32, loc := #caller_location) -> (ctx: Zo
 }
 
 // NOTE: scoped Zone*() procs also exists, no need of calling this directly.
-@(disabled=!TRACY_ENABLE) ZoneEnd :: #force_inline proc(ctx: ZoneCtx) { ___tracy_emit_zone_end(ctx) }
+@(disabled=!TRACY_ENABLE, no_instrumentation) ZoneEnd :: #force_inline proc "contextless" (ctx: ZoneCtx) { ___tracy_emit_zone_end(ctx) }
 
 // Memory profiling
 // (See allocator.odin for an implementation of an Odin custom allocator using memory profiling.)
@@ -134,25 +135,26 @@ IsConnected :: #force_inline proc() -> bool { return cast(bool)___tracy_connecte
 // ___tracy_alloc_srcloc()'s allocated source locations. Casting to a pointer is
 // what Tracy does internally but I don't think this is correct. We might have
 // to try and find a solution for C macro local static storage somehow.
-LockAnnounce :: #force_inline proc(loc := #caller_location) -> (ctx: LockCtx) {
+LockAnnounce :: #force_inline proc "contextless" (loc := #caller_location) -> (ctx: LockCtx) {
 	when TRACY_ENABLE {
 		id := ___tracy_alloc_srcloc(u32(loc.line), _sl(loc.file_path), _sl(loc.procedure))
 		ctx = ___tracy_announce_lockable_ctx((^___tracy_source_location_data)(uintptr(id)))
 	}
 	return
 }
-@(disabled=!TRACY_ENABLE) LockTerminate    :: #force_inline proc( lock: LockCtx ) { ___tracy_terminate_lockable_ctx( lock ) }
-@(disabled=!TRACY_ENABLE) LockBeforeLock   :: #force_inline proc( lock: LockCtx ) { ___tracy_before_lock_lockable_ctx( lock ) }
-@(disabled=!TRACY_ENABLE) LockAfterLock    :: #force_inline proc( lock: LockCtx ) { ___tracy_after_lock_lockable_ctx( lock ) }
-@(disabled=!TRACY_ENABLE) LockAfterUnlock  :: #force_inline proc( lock: LockCtx ) { ___tracy_after_unlock_lockable_ctx( lock ) }
-@(disabled=!TRACY_ENABLE) LockAfterTryLock :: #force_inline proc( lock: LockCtx, acquired: bool ) { ___tracy_after_try_lock_lockable_ctx( lock, b32(acquired) ) }
-@(disabled=!TRACY_ENABLE) LockMark         :: #force_inline proc( lock: LockCtx, loc := #caller_location ) {
+@(disabled=!TRACY_ENABLE) LockTerminate    :: #force_inline proc "contextless" ( lock: LockCtx ) { ___tracy_terminate_lockable_ctx( lock ) }
+@(disabled=!TRACY_ENABLE) LockBeforeLock   :: #force_inline proc "contextless" ( lock: LockCtx ) { ___tracy_before_lock_lockable_ctx( lock ) }
+LockBeforeLock :: #force_inline proc "contextless" ( lock: LockCtx ) -> (ok: b32) { when TRACY_ENABLE { ok = ___tracy_before_lock_lockable_ctx( lock ) } return ok }
+@(disabled=!TRACY_ENABLE) LockAfterLock    :: #force_inline proc "contextless" ( lock: LockCtx ) { ___tracy_after_lock_lockable_ctx( lock ) }
+@(disabled=!TRACY_ENABLE) LockAfterUnlock  :: #force_inline proc "contextless" ( lock: LockCtx ) { ___tracy_after_unlock_lockable_ctx( lock ) }
+@(disabled=!TRACY_ENABLE) LockAfterTryLock :: #force_inline proc "contextless" ( lock: LockCtx, acquired: bool ) { ___tracy_after_try_lock_lockable_ctx( lock, b32(acquired) ) }
+@(disabled=!TRACY_ENABLE) LockMark         :: #force_inline proc "contextless" ( lock: LockCtx, loc := #caller_location ) {
 	id := ___tracy_alloc_srcloc(u32(loc.line), _sl(loc.file_path), _sl(loc.procedure))
 	___tracy_mark_lockable_ctx(lock, (^___tracy_source_location_data)(uintptr(id)))
 }
-@(disabled=!TRACY_ENABLE) LockCustomName   :: #force_inline proc( lock: LockCtx, name: string ) { ___tracy_custom_name_lockable_ctx( lock, _sl(name) ) }
+@(disabled=!TRACY_ENABLE) LockCustomName   :: #force_inline proc "contextless" ( lock: LockCtx, name: string ) { ___tracy_custom_name_lockable_ctx( lock, _sl(name) ) }
 
 // Helper for passing cstring+length to Tracy functions.
-@(private="file") _sl :: proc(s: string) -> (cstring, c.size_t) {
+@(private="file", no_instrumentation) _sl :: proc "contextless" (s: string) -> (cstring, c.size_t) {
 	return cstring(raw_data(s)), c.size_t(len(s))
 }
