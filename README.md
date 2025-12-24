@@ -13,12 +13,7 @@ This is a bindings/wrapper library for the Odin programming language.
 ## 0. Prerequisites
 This assumes you are using the latest nightly build or GitHub master of the Odin compiler.   Since Odin is still under development this means these bindings might break in the future. Please create an issue or PR if that happens.
 
-## 1. Cloning the sources
-```console
-git clone https://github.com/nevertrimnuts/odin-tracy
-```
-
-## 2. Building the Tracy profiler server
+## 1. Building the Tracy profiler server
 
 Tracy profiler server is built using CMake version 3.16 or later.
 
@@ -35,7 +30,7 @@ cmake --build build/tracy-profiler
 Refer to official manual for more details.
 
 
-## 3. Building the Tracy profiler client library (the part that will be loaded into your program)
+## 2. Building the Tracy profiler client library (the part that will be loaded into your program)
 
 > [!NOTE]
 > you can also just use the scripts in the scripts/ directory. Makes it very easy to add/remove options. Currently only for linux.
@@ -58,7 +53,7 @@ lib tracy.obj
 c++ -std=c++11 -DTRACY_ENABLE -O2 vendor/tracy/public/TracyClient.cpp -shared -fPIC -o tracy.so
 ```
 
-## 4. (Optional) Run the demo application / profiler client
+## 3. (Optional) Run the demo application / profiler client
 
 ```console
 odin run examples/simple_demo -define:TRACY_ENABLE=true
