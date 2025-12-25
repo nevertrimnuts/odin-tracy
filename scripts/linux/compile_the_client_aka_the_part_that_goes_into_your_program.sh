@@ -12,6 +12,8 @@ BUILD_FLAGS+=(-DTRACY_ENABLE)
 # performance, but you must be sure that you use tracy zones (begin and end) 
 # correctly.
 # BUILD_FLAGS+=(-DTRACY_NO_VERIFY=ON) 
-BUILD_FLAGS+=(-DTRACY_MANUAL_LIFETIME=ON)
-BUILD_FLAGS+=(-DTRACY_DELAYED_INIT=ON)
+#
+# NOTE: if you want to initialize tracy yourself, you must define both of these.
+# BUILD_FLAGS+=(-DTRACY_MANUAL_LIFETIME=ON)
+# BUILD_FLAGS+=(-DTRACY_DELAYED_INIT=ON)
 c++ -std=c++11 "${BUILD_FLAGS[@]}" -O2 vendor/tracy/public/TracyClient.cpp -shared -fPIC -o tracy.so
