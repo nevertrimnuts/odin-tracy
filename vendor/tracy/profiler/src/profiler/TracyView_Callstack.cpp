@@ -561,12 +561,15 @@ void View::SmallCallstackButton( const char* name, uint32_t callstack, int& idx,
 void View::DrawCallstackCalls( uint32_t callstack, uint16_t limit ) const
 {
     const auto& csdata = m_worker.GetCallstack( callstack );
-    const auto cssz = std::min( csdata.size(), limit );
     bool first = true;
-    for( uint16_t i=0; i<cssz; i++ )
+    for( auto& v : csdata )
     {
-        const auto frameData = m_worker.GetCallstackFrame( csdata[i] );
+        const auto frameData = m_worker.GetCallstackFrame( v );
         if( !frameData ) break;
+        const auto& frame = frameData->data[frameData->size - 1];
+        auto filename = m_worker.GetString( frame.file );
+        auto image = frameData->imageName.Active() ? m_worker.GetString( frameData->imageName ) : nullptr;
+        if( IsFrameExternal( filename, image ) ) continue;
         if( first )
         {
             first = false;
@@ -577,7 +580,6 @@ void View::DrawCallstackCalls( uint32_t callstack, uint16_t limit ) const
             TextDisabledUnformatted( ICON_FA_LEFT_LONG );
             ImGui::SameLine();
         }
-        const auto& frame = frameData->data[frameData->size - 1];
         auto txt = m_worker.GetString( frame.name );
         if( txt[0] == '[' )
         {
@@ -591,6 +593,7 @@ void View::DrawCallstackCalls( uint32_t callstack, uint16_t limit ) const
         {
             ImGui::TextUnformatted( ShortenZoneName( ShortenName::Always, txt ) );
         }
+        if( --limit == 0 ) break;
     }
 }
 
